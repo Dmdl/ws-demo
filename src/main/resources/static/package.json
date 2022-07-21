@@ -1,0 +1,19 @@
+{
+  "name": "static",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fbjs": "^0.8.12",
+    "rsocket-core": "^0.0.10",
+    "rsocket-flowable": "^0.0.10",
+    "rsocket-types": "^0.0.10",
+    "rsocket-websocket-client": "^0.0.10",
+    "ws": "^8.8.1"
+  }
+}
