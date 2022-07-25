@@ -88,4 +88,3 @@ function main() {
 }
 
 document.addEventListener('DOMContentLoaded', main);
-document.getElementById('author-filter').addEventListener('change', main);

@@ -73,7 +73,7 @@ class Producer implements Ordered, ApplicationListener<ApplicationReadyEvent> {
 
         reactive.observeChannels()
                 .doOnNext(msg -> {
-                    Optional<Comment> comment = repository.findById(Integer.parseInt(msg.getMessage()));
+                    Optional<Comment> comment = repository.findById(msg.getMessage());
                     sink.tryEmitNext(new Gson().toJson(comment.get()));
                 })
                 .subscribe();

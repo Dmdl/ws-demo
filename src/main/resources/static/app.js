@@ -89,7 +89,6 @@ function main() {
 }
 
 document.addEventListener('DOMContentLoaded', main);
-document.getElementById('author-filter').addEventListener('change', main);
 },{"rsocket-core":19,"rsocket-websocket-client":31}],2:[function(require,module,exports){
 "use strict";
 
