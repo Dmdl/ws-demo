@@ -15,11 +15,19 @@ function addErrorMessage(prefix, error) {
 }
 
 function addMessage(message) {
-    let ul = document.getElementById("messages");
+    console.log(JSON.parse(message));
 
-    let li = document.createElement("li");
-    li.appendChild(document.createTextNode(JSON.stringify(message)));
-    ul.appendChild(li);
+    let div = document.getElementById("comments");
+
+    let avatar = document.createElement("img");
+    avatar.setAttribute("src", "avatar.png");
+    avatar.setAttribute("class", "avatar");
+
+    let innerDiv = document.createElement("div");
+    innerDiv.appendChild(avatar);
+    innerDiv.appendChild(document.createTextNode(JSON.parse(message).content));
+    innerDiv.setAttribute('class', 'msg-receive');
+    div.appendChild(innerDiv);
 }
 
 function main() {

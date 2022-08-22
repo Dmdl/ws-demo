@@ -1,0 +1,171 @@
+* {
+    padding: 0px;
+    margin: 0px;
+    font-family: 'Fira Code';
+}
+
+body {
+    height: 100%;
+    background: rgba(213, 221, 222, 0.15);
+}
+
+.chat-box {
+    position: absolute;
+    right: 20px;
+    bottom: 0px;
+    background: white;
+    width: 300px;
+    border-radius: 5px 5px 0px 0px;
+}
+
+.chat-head {
+    width: inherit;
+    height: 45px;
+    background: #2c3e50;
+    border-radius: 5px 5px 0px 0px;
+}
+
+.chat-head h2 {
+    color: white;
+    padding: 8px;
+    display: inline-block;
+}
+
+.chat-head img {
+    cursor: pointer;
+    float: right;
+    width: 25px;
+    margin: 10px;
+}
+
+.chat-body {
+    height: 355px;
+    width: inherit;
+    overflow: auto;
+    margin-bottom: 45px;
+}
+
+.chat-text {
+    position: fixed;
+    bottom: 0px;
+    height: 45px;
+    width: inherit;
+}
+
+.chat-text textarea {
+    width: inherit;
+    height: inherit;
+    box-sizing: border-box;
+    border: 1px solid #bdc3c7;
+    padding: 10px;
+    resize: none;
+}
+
+.chat-text textarea:active, .chat-text textarea:focus, .chat-text textarea:hover {
+    border-color: royalblue;
+}
+
+.msg-send {
+    background: #2ecc71;
+}
+
+.msg-receive {
+    background: #ffffff;
+}
+
+.msg-send, .msg-receive {
+    width: max-content;
+    /*height: 35px;*/
+    padding: 5px 5px 5px 10px;
+    margin: 10px auto;
+    border-radius: 3px;
+    line-height: 30px;
+    position: relative;
+    color: black;
+    font-size: large;
+    font-family: sans-serif;
+}
+
+.msg-receive:before {
+    content: '';
+    width: 0px;
+    height: 0px;
+    position: absolute;
+    border: 15px solid;
+    border-color: transparent #3498db transparent transparent;
+    left: -29px;
+    top: 7px;
+}
+
+.msg-send:after {
+    content: '';
+    width: 0px;
+    height: 0px;
+    position: absolute;
+    border: 15px solid;
+    border-color: transparent transparent transparent #2ecc71;
+    right: -29px;
+    top: 7px;
+}
+
+.msg-receive:hover, .msg-send:hover {
+    opacity: .9;
+}
+
+/* Chat containers */
+.container {
+    border: 2px solid #dedede;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+/* Darker chat container */
+.darker {
+    border-color: #ccc;
+    background-color: #ddd;
+}
+
+/* Clear floats */
+.container::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+/* Style images */
+.container img {
+    float: left;
+    max-width: 60px;
+    width: 100%;
+    margin-right: 20px;
+    border-radius: 50%;
+}
+
+/* Style the right image */
+.container img.right {
+    float: right;
+    margin-left: 20px;
+    margin-right: 0;
+}
+
+/* Style time text */
+.time-right {
+    float: right;
+    color: #aaa;
+}
+
+/* Style time text */
+.time-left {
+    float: left;
+    color: #999;
+}
+
+.avatar {
+    vertical-align: middle;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
