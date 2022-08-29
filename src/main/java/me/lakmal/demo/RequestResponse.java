@@ -24,6 +24,7 @@ import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
@@ -88,10 +89,14 @@ class Producer implements Ordered, ApplicationListener<ApplicationReadyEvent> {
 
         RedisPubSubReactiveCommands<String, String> reactive = connection.reactive();
 
-        reactive.xread(new XReadArgs().block(Duration.ofMinutes(5)), XReadArgs.StreamOffset.from("some-stream", "$"))
+        reactive.xread(new XReadArgs().block(Duration.ofSeconds(10)), XReadArgs.StreamOffset.from("some-stream", "$"))
                 .doOnNext(msg -> sink.tryEmitNext(msg.getBody().get("key")))
                 .repeat()
                 .doOnError(e -> log.info("on error >>> {}", e.getMessage()))
+                .onErrorResume(e -> {
+                    log.error("Error >> {} ", e.getMessage());
+                    return Mono.empty();
+                })
                 .subscribe();
         return sink.asFlux();
     }
@@ -110,11 +115,14 @@ class Consumer implements Ordered, ApplicationListener<ApplicationReadyEvent> {
     public void onApplicationEvent(ApplicationReadyEvent event) {
         RSocketConnector.create()
                 .payloadDecoder(PayloadDecoder.ZERO_COPY)
-//                .connect(TcpClientTransport.create(7000))
                 .connect(WebsocketClientTransport.create(7000))
                 .flatMapMany(sender -> sender
                         .requestStream(DefaultPayload.create("To server >>"))
                         .map(Payload::getDataUtf8))
+                .onErrorResume(e -> {
+                    log.error("Error >> {} ", e.getMessage());
+                    return Mono.empty();
+                })
                 .subscribe(result -> log.info("new message >> " + result));
     }
 }
