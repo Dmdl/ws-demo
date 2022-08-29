@@ -2,6 +2,7 @@ package me.lakmal.demo;
 
 import com.google.gson.Gson;
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.XReadArgs;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import io.lettuce.core.pubsub.api.reactive.RedisPubSubReactiveCommands;
 import io.rsocket.Payload;
@@ -24,8 +25,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-import reactor.util.concurrent.Queues;
 
+import java.time.Duration;
 import java.util.Optional;
 
 @SpringBootApplication
@@ -50,7 +51,7 @@ class Producer implements Ordered, ApplicationListener<ApplicationReadyEvent> {
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        RSocketServer.create(SocketAcceptor.forRequestStream(handler -> subscribeToRedis()
+        RSocketServer.create(SocketAcceptor.forRequestStream(handler -> subscribeToStream()
                         .map(DefaultPayload::create)))
                 .payloadDecoder(PayloadDecoder.ZERO_COPY)
 //                .payloadDecoder(PayloadDecoder.DEFAULT)
@@ -64,8 +65,9 @@ class Producer implements Ordered, ApplicationListener<ApplicationReadyEvent> {
         return Ordered.HIGHEST_PRECEDENCE;
     }
 
-    Flux<String> subscribeToRedis() {
-        Sinks.Many<String> sink = Sinks.many().multicast().onBackpressureBuffer(Queues.SMALL_BUFFER_SIZE, false);
+    Flux<String> subscribeToPubSub() {
+//        Sinks.Many<String> sink = Sinks.many().multicast().onBackpressureBuffer(Queues.SMALL_BUFFER_SIZE, false);
+        Sinks.Many<String> sink = Sinks.many().unicast().onBackpressureBuffer();
         StatefulRedisPubSubConnection<String, String> connection = redisClient.connectPubSub();
 
         RedisPubSubReactiveCommands<String, String> reactive = connection.reactive();
@@ -76,6 +78,23 @@ class Producer implements Ordered, ApplicationListener<ApplicationReadyEvent> {
                     Optional<Comment> comment = repository.findById(msg.getMessage());
                     sink.tryEmitNext(new Gson().toJson(comment.get()));
                 })
+                .subscribe();
+        return sink.asFlux();
+    }
+
+    Flux<String> subscribeToStream() {
+        Sinks.Many<String> sink = Sinks.many().unicast().onBackpressureBuffer();
+        StatefulRedisPubSubConnection<String, String> connection = redisClient.connectPubSub();
+
+        RedisPubSubReactiveCommands<String, String> reactive = connection.reactive();
+
+        reactive.xread(new XReadArgs().block(Duration.ofMinutes(5)), XReadArgs.StreamOffset.from("some-stream", "$"))
+                .doOnNext(msg -> {
+                    log.info(">>>>>>>>>>>>>>>>>>>>>");
+                    sink.tryEmitNext(msg.getBody().get("key"));
+                })
+                .repeat()
+                .doOnError(e -> log.info("on error >>> {}", e.getMessage()))
                 .subscribe();
         return sink.asFlux();
     }
