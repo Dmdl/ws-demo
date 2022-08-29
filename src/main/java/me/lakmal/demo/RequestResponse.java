@@ -89,10 +89,7 @@ class Producer implements Ordered, ApplicationListener<ApplicationReadyEvent> {
         RedisPubSubReactiveCommands<String, String> reactive = connection.reactive();
 
         reactive.xread(new XReadArgs().block(Duration.ofMinutes(5)), XReadArgs.StreamOffset.from("some-stream", "$"))
-                .doOnNext(msg -> {
-                    log.info(">>>>>>>>>>>>>>>>>>>>>");
-                    sink.tryEmitNext(msg.getBody().get("key"));
-                })
+                .doOnNext(msg -> sink.tryEmitNext(msg.getBody().get("key")))
                 .repeat()
                 .doOnError(e -> log.info("on error >>> {}", e.getMessage()))
                 .subscribe();
