@@ -127,8 +127,9 @@ function main() {
 document.getElementById("submit").addEventListener("click", onClick);
 
 function onClick() {
-    //let chatMessage = document.getElementById("message").value;
-    requestsSink.sendRequest({data: 'new message'});
+    let chatMessage = document.getElementById("chat-message").value;
+    console.log(chatMessage);
+    requestsSink.sendRequest({data: chatMessage});
 }
 
 document.addEventListener('DOMContentLoaded', main);
