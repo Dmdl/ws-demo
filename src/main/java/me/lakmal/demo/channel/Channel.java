@@ -28,7 +28,7 @@ public class Channel implements ApplicationListener<ApplicationReadyEvent> {
     private final RedisClient redisClient;
 
     private static final String STREAM_KEY = "some-stream";
-    private final Sinks.Many<String> SINK = Sinks.many().unicast().onBackpressureBuffer();
+    private final Sinks.Many<String> SINK = Sinks.many().multicast().onBackpressureBuffer();
 
     public Channel(RedisClient redisClient) {
         this.redisClient = redisClient;
