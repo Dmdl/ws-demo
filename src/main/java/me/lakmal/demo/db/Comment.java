@@ -1,7 +1,7 @@
 package me.lakmal.demo.db;
 
 
-import lombok.AllArgsConstructor;
+/*import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
@@ -18,3 +18,4 @@ public class Comment {
     private String author;
     private String content;
 }
+*/

@@ -169,3 +169,8 @@ body {
     border-radius: 50%;
     margin-right: 5px;
 }
+
+form {
+    position: absolute;
+    bottom: 0;
+}

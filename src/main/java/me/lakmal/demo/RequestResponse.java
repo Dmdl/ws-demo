@@ -14,30 +14,29 @@ import io.rsocket.transport.netty.client.WebsocketClientTransport;
 import io.rsocket.transport.netty.server.WebsocketServerTransport;
 import io.rsocket.util.DefaultPayload;
 import lombok.extern.slf4j.Slf4j;
-import me.lakmal.demo.db.Comment;
-import me.lakmal.demo.db.Repository;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @SpringBootApplication
-@EnableTransactionManagement
+//@EnableTransactionManagement
 public class RequestResponse {
     public static void main(String[] args) {
         SpringApplication.run(RequestResponse.class, args);
     }
 }
 
+/*
 @Slf4j
 @Component
 class Producer implements Ordered, ApplicationListener<ApplicationReadyEvent> {
@@ -89,8 +88,12 @@ class Producer implements Ordered, ApplicationListener<ApplicationReadyEvent> {
 
         RedisPubSubReactiveCommands<String, String> reactive = connection.reactive();
 
-        reactive.xread(new XReadArgs().block(Duration.ofSeconds(10)), XReadArgs.StreamOffset.from("some-stream", "$"))
-                .doOnNext(msg -> sink.tryEmitNext(msg.getBody().get("key")))
+        var lastId = new AtomicReference<>("$");
+        reactive.xread(new XReadArgs().block(Duration.ofSeconds(10)), XReadArgs.StreamOffset.from("some-stream", lastId.get()))
+                .doOnNext(msg -> {
+                    sink.tryEmitNext(msg.getBody().get("key"));
+                    lastId.set(msg.getId());
+                })
                 .repeat()
                 .doOnError(e -> log.info("on error >>> {}", e.getMessage()))
                 .onErrorResume(e -> {
@@ -126,3 +129,4 @@ class Consumer implements Ordered, ApplicationListener<ApplicationReadyEvent> {
                 .subscribe(result -> log.info("new message >> " + result));
     }
 }
+*/
