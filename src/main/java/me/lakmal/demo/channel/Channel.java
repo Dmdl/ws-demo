@@ -2,8 +2,6 @@ package me.lakmal.demo.channel;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.XReadArgs;
-import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
-import io.lettuce.core.pubsub.api.reactive.RedisPubSubReactiveCommands;
 import io.rsocket.Payload;
 import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketServer;
@@ -30,16 +28,17 @@ public class Channel implements ApplicationListener<ApplicationReadyEvent> {
     private final RedisClient redisClient;
 
     private static final String STREAM_KEY = "some-stream";
+    private final Sinks.Many<String> SINK = Sinks.many().unicast().onBackpressureBuffer();
 
     public Channel(RedisClient redisClient) {
         this.redisClient = redisClient;
+        emitMessage();
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         RSocketServer
                 .create(SocketAcceptor.forRequestChannel(in -> subscribeToStream(in).map(DefaultPayload::create)))
-//                .create(SocketAcceptor.forRequestChannel(Flux::from))
                 .payloadDecoder(PayloadDecoder.ZERO_COPY)
                 .bind(WebsocketServerTransport.create(7001))
                 .subscribe();
@@ -47,10 +46,8 @@ public class Channel implements ApplicationListener<ApplicationReadyEvent> {
 
     private Flux<String> subscribeToStream(Publisher<Payload> streamIn) {
 
-        Sinks.Many<String> sink = Sinks.many().unicast().onBackpressureBuffer();
-        StatefulRedisPubSubConnection<String, String> connection = redisClient.connectPubSub();
-
-        RedisPubSubReactiveCommands<String, String> reactive = connection.reactive();
+        var connection = redisClient.connectPubSub();
+        var reactive = connection.reactive();
 
         Flux.from(streamIn)
                 .doOnNext(msg -> {
@@ -58,12 +55,18 @@ public class Channel implements ApplicationListener<ApplicationReadyEvent> {
                     reactive.xadd(STREAM_KEY, Map.of("key", msg.getDataUtf8())).subscribe();
                 })
                 .subscribe();
+        return SINK.asFlux();
+    }
+
+    private void emitMessage() {
+        var connection = redisClient.connectPubSub();
+        var reactive = connection.reactive();
 
         var lastId = new AtomicReference<>("$");
         reactive.xread(new XReadArgs().block(Duration.ofSeconds(10)), XReadArgs.StreamOffset.from(STREAM_KEY, lastId.get()))
                 .doOnNext(msg -> {
                     log.info("From Redis >>> {}", msg.getBody().get("key"));
-                    sink.tryEmitNext(msg.getBody().get("key"));
+                    SINK.tryEmitNext(msg.getBody().get("key"));
                     lastId.set(msg.getId());
                 })
                 .repeat()
@@ -73,6 +76,5 @@ public class Channel implements ApplicationListener<ApplicationReadyEvent> {
                     return Mono.empty();
                 })
                 .subscribe();
-        return sink.asFlux();
     }
 }
