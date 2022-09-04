@@ -62,6 +62,7 @@ public class Channel implements ApplicationListener<ApplicationReadyEvent> {
         var lastId = new AtomicReference<>("$");
         reactive.xread(new XReadArgs().block(Duration.ofSeconds(10)), XReadArgs.StreamOffset.from(STREAM_KEY, lastId.get()))
                 .doOnNext(msg -> {
+                    log.info("From Redis >>> {}", msg.getBody().get("key"));
                     sink.tryEmitNext(msg.getBody().get("key"));
                     lastId.set(msg.getId());
                 })

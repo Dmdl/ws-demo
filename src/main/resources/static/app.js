@@ -116,7 +116,7 @@ function main() {
     // Open the connection
     client.connect().subscribe({
         onComplete: socket => {
-            let clientRequests = ['a', 'b', 'c'];
+            let clientRequests = ['a'];
             clientRequests = clientRequests.map((req) => {
                 return {
                     data: req
@@ -150,14 +150,14 @@ document.getElementById("submit").addEventListener("click", onClick);
 
 function onClick() {
     let chatMessage = document.getElementById("message").value;
-    flowable.subscribe({
-        onComplete: () => console.log('done'),
-        onError: (error) => console.error(error),
-        onNext: (value) => console.log(value),
-        // Nothing happens until `request(n)` is called
-        onSubscribe: (sub) => sub.request(1),
-    });
-    flowable.subscribe()
+    logger.info(chatMessage);
+    // flowable.subscribe({
+    //     onComplete: () => console.log('done'),
+    //     onError: (error) => console.error(error),
+    //     onNext: (value) => console.log(value),
+    //     // Nothing happens until `request(n)` is called
+    //     onSubscribe: (sub) => sub.request(1),
+    // });
 }
 
 document.addEventListener('DOMContentLoaded', main);
